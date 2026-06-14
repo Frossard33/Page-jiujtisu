@@ -1,0 +1,1392 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11110f">
+  <meta name="description" content="Matrícula online rápida da Gilson Batista Jiu-Jitsu.">
+  <title>Matrícula | Gilson Batista Jiu-Jitsu</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --ink: #f8f5ee;
+      --muted: #aaa69d;
+      --line: rgba(255, 255, 255, .13);
+      --surface: rgba(18, 18, 16, .94);
+      --soft: rgba(255, 255, 255, .055);
+      --gold: #d9af54;
+      --gold-light: #f4d891;
+      --green: #2ba66b;
+      --danger: #e56a62;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    html {
+      min-width: 320px;
+      overflow-x: hidden;
+      background: #0a0a09;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(8, 8, 7, .91), rgba(8, 8, 7, .97)),
+        url("imglogo-mobile.webp") center 18vh / min(82vw, 620px) auto no-repeat fixed,
+        #0a0a09;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="file"] {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10, 10, 9, .92);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: min(calc(100% - 28px), 720px);
+      min-height: 66px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      text-decoration: none;
+    }
+
+    .brand img {
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(217, 175, 84, .45);
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .brand strong,
+    .brand small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand strong {
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .brand small {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .site-link {
+      flex: 0 0 auto;
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    main {
+      width: min(calc(100% - 24px), 720px);
+      margin: 0 auto;
+      padding: 22px 0 max(32px, env(safe-area-inset-bottom));
+    }
+
+    .heading {
+      margin-bottom: 18px;
+    }
+
+    .heading h1 {
+      margin: 0;
+      font-size: clamp(25px, 7vw, 38px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .heading p {
+      max-width: 56ch;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #11110f;
+    }
+
+    .mode-switch a {
+      display: grid;
+      min-height: 44px;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+      text-decoration: none;
+    }
+
+    .mode-switch a + a {
+      border-left: 1px solid var(--line);
+    }
+
+    .mode-switch a.active {
+      background: rgba(217, 175, 84, .15);
+      color: var(--gold-light);
+    }
+
+    .progress {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .progress-bar {
+      display: block;
+      height: 4px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .11);
+    }
+
+    .progress-item.active .progress-bar,
+    .progress-item.done .progress-bar {
+      background: var(--gold);
+    }
+
+    .progress-item span:last-child {
+      display: block;
+      margin-top: 6px;
+      overflow: hidden;
+      color: #74716a;
+      font-size: 10px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .progress-item.active span:last-child,
+    .progress-item.done span:last-child {
+      color: var(--gold-light);
+    }
+
+    .form-shell {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .32);
+    }
+
+    .step {
+      padding: 20px;
+    }
+
+    .step[hidden] {
+      display: none;
+    }
+
+    .step-head {
+      margin-bottom: 18px;
+    }
+
+    .step-head span {
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .step-head h2 {
+      margin: 5px 0 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .step-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      min-width: 0;
+      gap: 6px;
+    }
+
+    .field.wide {
+      grid-column: 1 / -1;
+    }
+
+    .field label,
+    .field-label {
+      color: #d1cdc4;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid #44433f;
+      border-radius: 7px;
+      padding: 0 12px;
+      background: #181816;
+      color: var(--ink);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+      padding-top: 11px;
+      line-height: 1.4;
+    }
+
+    input:focus,
+    textarea:focus,
+    button:focus-visible,
+    a:focus-visible {
+      border-color: var(--gold);
+      outline: 3px solid rgba(217, 175, 84, .16);
+      outline-offset: 1px;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #77746d;
+    }
+
+    input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .choice {
+      position: relative;
+    }
+
+    .choice input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice span {
+      display: grid;
+      min-height: 46px;
+      place-items: center;
+      border: 1px solid #44433f;
+      border-radius: 7px;
+      padding: 7px;
+      color: var(--muted);
+      background: #181816;
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .choice input:checked + span {
+      border-color: var(--gold);
+      background: rgba(217, 175, 84, .13);
+      color: var(--gold-light);
+    }
+
+    .photo-control {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      border: 1px dashed #55534d;
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--soft);
+    }
+
+    .photo-preview {
+      display: grid;
+      width: 72px;
+      height: 86px;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 7px;
+      background: #24231f;
+      color: #77746d;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-control input {
+      min-height: auto;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      font-size: 12px;
+    }
+
+    .photo-control small {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .conditional {
+      margin-top: 12px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .summary div {
+      min-width: 0;
+      border-left: 3px solid var(--gold);
+      padding: 10px;
+      background: var(--soft);
+    }
+
+    .summary span,
+    .summary strong {
+      display: block;
+    }
+
+    .summary span {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .summary strong {
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+      font-size: 13px;
+    }
+
+    .contract-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--soft);
+    }
+
+    .contract-box h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .contract-box p {
+      margin: 6px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .contract-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .contract-link {
+      display: none;
+      min-height: 44px;
+      place-items: center;
+      border: 1px solid rgba(217, 175, 84, .55);
+      border-radius: 7px;
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 850;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .contract-link.visible {
+      display: grid;
+    }
+
+    .contract-status {
+      min-height: 18px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .check-row {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 9px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 11px;
+      background: #171715;
+      color: #d1cdc4;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .check-row input {
+      width: 18px;
+      height: 18px;
+      min-height: auto;
+      margin: 0;
+      padding: 0;
+      accent-color: var(--gold);
+    }
+
+    .check-row.disabled {
+      opacity: .48;
+    }
+
+    .form-actions {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      padding: 12px 20px max(12px, env(safe-area-inset-bottom));
+      background: rgba(13, 13, 12, .97);
+      backdrop-filter: blur(12px);
+    }
+
+    .form-actions.single {
+      grid-template-columns: 1fr;
+    }
+
+    .button {
+      min-height: 48px;
+      border: 0;
+      border-radius: 7px;
+      padding: 0 16px;
+      font-weight: 900;
+    }
+
+    .button.primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold-light), #af7926);
+      color: #17130c;
+    }
+
+    .button.secondary {
+      border: 1px solid #4a4842;
+      background: #1a1a18;
+      color: var(--ink);
+    }
+
+    .button:disabled {
+      cursor: wait;
+      opacity: .55;
+    }
+
+    .feedback {
+      display: none;
+      margin: 0 20px 16px;
+      border-left: 4px solid var(--danger);
+      padding: 10px 12px;
+      background: rgba(229, 106, 98, .1);
+      color: #ffc4c0;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .feedback.visible {
+      display: block;
+    }
+
+    .success {
+      display: none;
+      min-height: 430px;
+      place-items: center;
+      padding: 32px 22px;
+      text-align: center;
+    }
+
+    .success.visible {
+      display: grid;
+    }
+
+    .success-mark {
+      display: grid;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 17px;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(43, 166, 107, .18);
+      color: #65d79e;
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .success h2 {
+      margin: 0;
+      font-size: 23px;
+    }
+
+    .success p {
+      max-width: 42ch;
+      margin: 9px auto 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .protocol {
+      display: inline-block;
+      margin-top: 15px;
+      border-radius: 5px;
+      padding: 7px 10px;
+      background: rgba(217, 175, 84, .12);
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .success .contract-link {
+      display: inline-grid;
+      margin: 18px auto 0;
+      padding: 0 15px;
+    }
+
+    @media (max-width: 580px) {
+      main {
+        width: 100%;
+        padding: 18px 10px max(24px, env(safe-area-inset-bottom));
+      }
+
+      .topbar-inner {
+        width: 100%;
+        padding: 0 12px;
+      }
+
+      .heading {
+        padding: 0 4px;
+      }
+
+      .step {
+        padding: 17px 14px;
+      }
+
+      .fields {
+        grid-template-columns: 1fr;
+      }
+
+      .field.wide {
+        grid-column: 1;
+      }
+
+      .summary {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .summary div:first-child {
+        grid-column: 1 / -1;
+      }
+
+      .form-actions {
+        padding-right: 14px;
+        padding-left: 14px;
+      }
+
+      .feedback {
+        margin-right: 14px;
+        margin-left: 14px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .brand small {
+        display: none;
+      }
+
+      .choice-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html" aria-label="Voltar ao site da academia">
+        <img src="imglogo-mobile.webp" alt="" width="42" height="42">
+        <span>
+          <strong>Gilson Batista Jiu-Jitsu</strong>
+          <small>Matrícula online</small>
+        </span>
+      </a>
+      <a class="site-link" href="index.html">Voltar</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="heading">
+      <h1>Matrícula</h1>
+      <p>Leva poucos minutos. Preencha os dados essenciais, confira o contrato e confirme.</p>
+    </div>
+
+    <nav class="mode-switch" aria-label="Tipo de matrícula">
+      <a id="adultModeLink" href="matricula.html?turma=adulto">Adulto</a>
+      <a id="childModeLink" href="matricula.html?turma=infantil">Infantil</a>
+    </nav>
+
+    <div class="progress" aria-label="Progresso da matrícula">
+      <div class="progress-item active" data-progress="1"><span class="progress-bar"></span><span>Dados</span></div>
+      <div class="progress-item" data-progress="2"><span class="progress-bar"></span><span>Segurança</span></div>
+      <div class="progress-item" data-progress="3"><span class="progress-bar"></span><span>Contrato</span></div>
+    </div>
+
+    <section class="form-shell">
+      <form id="enrollmentForm" novalidate>
+        <section class="step" data-step="1">
+          <div class="step-head">
+            <span>Etapa 1 de 3</span>
+            <h2 id="stepOneTitle">Dados do aluno</h2>
+            <p>Usaremos estas informações para identificar a matrícula e entrar em contato.</p>
+          </div>
+
+          <div class="fields">
+            <div class="field wide">
+              <label for="studentName">Nome completo</label>
+              <input id="studentName" name="studentName" type="text" autocomplete="name" maxlength="160" required placeholder="Nome e sobrenome">
+            </div>
+            <div class="field">
+              <label for="birthDate">Data de nascimento</label>
+              <input id="birthDate" name="birthDate" type="date" autocomplete="bday" required>
+            </div>
+            <div class="field adult-only">
+              <label for="studentCpf">CPF</label>
+              <input id="studentCpf" name="studentCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00">
+            </div>
+            <div class="field">
+              <label id="phoneLabel" for="contactPhone">WhatsApp</label>
+              <input id="contactPhone" name="contactPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" required placeholder="(24) 99999-9999">
+            </div>
+            <div class="field">
+              <label id="emailLabel" for="contactEmail">E-mail</label>
+              <input id="contactEmail" name="contactEmail" type="email" autocomplete="email" maxlength="160" required placeholder="email@exemplo.com">
+            </div>
+            <div class="field wide">
+              <label for="address">Endereço completo</label>
+              <input id="address" name="address" type="text" autocomplete="street-address" maxlength="220" required placeholder="Rua, número, bairro e cidade">
+            </div>
+          </div>
+
+          <div id="guardianFields" class="conditional" hidden>
+            <div class="fields">
+              <div class="field">
+                <label for="guardianName">Nome do responsável</label>
+                <input id="guardianName" name="guardianName" type="text" autocomplete="name" maxlength="160" placeholder="Nome completo">
+              </div>
+              <div class="field">
+                <label for="guardianCpf">CPF do responsável</label>
+                <input id="guardianCpf" name="guardianCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="step" data-step="2" hidden>
+          <div class="step-head">
+            <span>Etapa 2 de 3</span>
+            <h2>Foto e segurança</h2>
+            <p>Informações importantes para identificação e cuidado durante os treinos.</p>
+          </div>
+
+          <div class="fields">
+            <div class="field wide">
+              <span class="field-label">Foto do aluno</span>
+              <div class="photo-control">
+                <div class="photo-preview" id="photoPreview">Prévia da foto</div>
+                <div>
+                  <input id="studentPhoto" name="studentPhoto" type="file" accept="image/jpeg,image/png,image/webp" capture="user" required>
+                  <small>Use uma foto nítida do rosto. Você pode tirar agora pela câmera.</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="emergencyName">Contato de emergência</label>
+              <input id="emergencyName" name="emergencyName" type="text" autocomplete="name" maxlength="160" required placeholder="Nome completo">
+            </div>
+            <div class="field">
+              <label for="emergencyPhone">Telefone de emergência</label>
+              <input id="emergencyPhone" name="emergencyPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" required placeholder="(24) 99999-9999">
+            </div>
+
+            <div class="field wide">
+              <span class="field-label">Já treinou jiu-jitsu?</span>
+              <div class="choice-grid">
+                <label class="choice"><input type="radio" name="experience" value="Primeira vez" checked><span>Primeira vez</span></label>
+                <label class="choice"><input type="radio" name="experience" value="Ja treinou antes"><span>Já treinou antes</span></label>
+              </div>
+            </div>
+
+            <div class="field wide">
+              <span class="field-label">Possui alergia, restrição médica ou usa medicamento?</span>
+              <div class="choice-grid">
+                <label class="choice"><input type="radio" name="hasMedicalInfo" value="nao" checked><span>Não</span></label>
+                <label class="choice"><input type="radio" name="hasMedicalInfo" value="sim"><span>Sim</span></label>
+              </div>
+              <div id="medicalDetailsField" class="conditional" hidden>
+                <label class="field-label" for="medicalDetails">Conte o que precisamos saber</label>
+                <textarea id="medicalDetails" name="medicalDetails" maxlength="500" placeholder="Ex.: alergia, medicamento, lesão ou restrição"></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="step" data-step="3" hidden>
+          <div class="step-head">
+            <span>Etapa 3 de 3</span>
+            <h2>Contrato e confirmação</h2>
+            <p>Confira as condições, abra o contrato preenchido e confirme sua matrícula.</p>
+          </div>
+
+          <div class="summary" aria-label="Resumo da matrícula">
+            <div><span>Turma</span><strong id="summaryClass">Adulto · 20h</strong></div>
+            <div><span>Mensalidade</span><strong>R$ 85,00</strong></div>
+            <div><span>Vencimento</span><strong>Todo dia 10</strong></div>
+          </div>
+
+          <div class="contract-box">
+            <h3>Contrato de matrícula</h3>
+            <p>Geramos o documento com seus dados. Abra o PDF e leia antes de confirmar.</p>
+            <div class="contract-actions">
+              <button class="button secondary" id="prepareContractButton" type="button">Preparar contrato para leitura</button>
+              <a class="contract-link" id="readContractLink" href="#" target="_blank" rel="noopener">Abrir e ler contrato preenchido</a>
+            </div>
+            <p class="contract-status" id="contractStatus">O aceite será liberado depois que o contrato for aberto.</p>
+          </div>
+
+          <div class="check-list">
+            <label class="check-row disabled" id="contractAcceptRow">
+              <input id="acceptContract" name="acceptContract" type="checkbox" disabled required>
+              <span>Li o contrato, estou ciente das condições e concordo com seus termos.</span>
+            </label>
+            <label class="check-row">
+              <input id="confirmEnrollment" name="confirmEnrollment" type="checkbox" required>
+              <span>Confirmo esta matrícula e autorizo o contato da academia pelo WhatsApp ou e-mail.</span>
+            </label>
+          </div>
+        </section>
+
+        <p class="feedback" id="feedback" role="alert"></p>
+
+        <div class="form-actions">
+          <button class="button secondary" id="backButton" type="button" hidden>Voltar</button>
+          <button class="button primary" id="nextButton" type="button">Continuar</button>
+          <button class="button primary" id="submitButton" type="submit" hidden>Confirmar matrícula</button>
+        </div>
+      </form>
+
+      <section class="success" id="successPanel" aria-live="polite">
+        <div>
+          <span class="success-mark">✓</span>
+          <h2>Matrícula recebida</h2>
+          <p>Seus dados, foto e contrato foram enviados para conferência da academia. Em breve entraremos em contato.</p>
+          <span class="protocol" id="protocol"></span>
+          <a class="contract-link" id="acceptedContractLink" href="#" target="_blank" rel="noopener">Ver meu contrato confirmado</a>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="vendor/pdf-lib.min.js"></script>
+  <script src="matricula-config.js"></script>
+  <script>
+    (() => {
+      const config = window.MATRICULA_CONFIG || {};
+      const localHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+      const API_URL = config.apiUrl || (localHost ? "http://127.0.0.1:8000/api/matriculas-online/" : "");
+      const ACADEMY_SLUG = config.academySlug || "gilson-batista";
+      const ACADEMY_EMAIL = config.academyEmail || "gilsonbatista7@hotmail.com";
+      const CONTRACT_VERSION = config.contractVersion || "v3-2026-06";
+      const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
+      const CONTRACTS = {
+        adulto: { template: "contrato-adulto-template.pdf", label: "Contrato Adulto", prefix: "contrato-adulto" },
+        infantil: { template: "contrato-infantil-template.pdf", label: "Contrato Infantil", prefix: "contrato-infantil" }
+      };
+
+      const form = document.querySelector("#enrollmentForm");
+      const steps = [...document.querySelectorAll("[data-step]")];
+      const progressItems = [...document.querySelectorAll("[data-progress]")];
+      const nextButton = document.querySelector("#nextButton");
+      const backButton = document.querySelector("#backButton");
+      const submitButton = document.querySelector("#submitButton");
+      const formActions = document.querySelector(".form-actions");
+      const feedback = document.querySelector("#feedback");
+      const guardianFields = document.querySelector("#guardianFields");
+      const guardianName = document.querySelector("#guardianName");
+      const guardianCpf = document.querySelector("#guardianCpf");
+      const studentCpf = document.querySelector("#studentCpf");
+      const studentPhoto = document.querySelector("#studentPhoto");
+      const photoPreview = document.querySelector("#photoPreview");
+      const medicalDetailsField = document.querySelector("#medicalDetailsField");
+      const medicalDetails = document.querySelector("#medicalDetails");
+      const prepareContractButton = document.querySelector("#prepareContractButton");
+      const readContractLink = document.querySelector("#readContractLink");
+      const acceptContract = document.querySelector("#acceptContract");
+      const contractAcceptRow = document.querySelector("#contractAcceptRow");
+      const contractStatus = document.querySelector("#contractStatus");
+      const successPanel = document.querySelector("#successPanel");
+      const acceptedContractLink = document.querySelector("#acceptedContractLink");
+      let currentStep = 1;
+      let mode = "adulto";
+      let contractOpened = false;
+      let readingContractUrl = "";
+      let acceptedContractUrl = "";
+
+      const todayIso = () => {
+        const now = new Date();
+        return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      };
+
+      const yesterdayIso = () => {
+        const date = new Date();
+        date.setDate(date.getDate() - 1);
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      };
+
+      const formatDate = (value) => {
+        if (!value) return "";
+        const [year, month, day] = value.split("-");
+        return `${day}/${month}/${year}`;
+      };
+
+      const ageFromBirthDate = (value) => {
+        if (!value) return null;
+        const birth = new Date(`${value}T12:00:00`);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const beforeBirthday = today.getMonth() < birth.getMonth()
+          || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+        if (beforeBirthday) age -= 1;
+        return age;
+      };
+
+      const normalizePhone = (value) => {
+        const digits = String(value || "").replace(/\D/g, "");
+        return digits.length <= 11 ? `55${digits}` : digits;
+      };
+
+      const sanitizeFileName = (value) => String(value || "aluno")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase()
+        .slice(0, 60) || "aluno";
+
+      const showFeedback = (message) => {
+        feedback.textContent = message;
+        feedback.classList.add("visible");
+        feedback.scrollIntoView({ behavior: "smooth", block: "center" });
+      };
+
+      const clearFeedback = () => {
+        feedback.textContent = "";
+        feedback.classList.remove("visible");
+      };
+
+      const activeFields = (stepNumber) => [
+        ...document.querySelector(`[data-step="${stepNumber}"]`).querySelectorAll("input, textarea")
+      ].filter((field) => !field.disabled && field.type !== "hidden");
+
+      const validateStep = (stepNumber) => {
+        clearFeedback();
+        const invalid = activeFields(stepNumber).find((field) => !field.checkValidity());
+        if (invalid) {
+          invalid.reportValidity();
+          invalid.focus({ preventScroll: true });
+          invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+          return false;
+        }
+        if (stepNumber === 2) {
+          const photo = studentPhoto.files[0];
+          if (!photo) {
+            showFeedback("Adicione uma foto nítida do aluno.");
+            return false;
+          }
+          if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type) || photo.size > MAX_PHOTO_SIZE) {
+            showFeedback("Use uma foto JPG, PNG ou WEBP com até 5 MB.");
+            return false;
+          }
+        }
+        return true;
+      };
+
+      const renderStep = () => {
+        steps.forEach((step) => {
+          step.hidden = Number(step.dataset.step) !== currentStep;
+        });
+        progressItems.forEach((item) => {
+          const number = Number(item.dataset.progress);
+          item.classList.toggle("active", number === currentStep);
+          item.classList.toggle("done", number < currentStep);
+        });
+        backButton.hidden = currentStep === 1;
+        nextButton.hidden = currentStep === 3;
+        submitButton.hidden = currentStep !== 3;
+        formActions.classList.toggle("single", currentStep === 1);
+        clearFeedback();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      const invalidateContract = () => {
+        if (!readingContractUrl && !contractOpened) return;
+        if (readingContractUrl) URL.revokeObjectURL(readingContractUrl);
+        readingContractUrl = "";
+        contractOpened = false;
+        readContractLink.classList.remove("visible");
+        readContractLink.removeAttribute("href");
+        acceptContract.checked = false;
+        acceptContract.disabled = true;
+        contractAcceptRow.classList.add("disabled");
+        contractStatus.textContent = "Os dados mudaram. Prepare novamente o contrato para leitura.";
+      };
+
+      const applyMode = () => {
+        const requested = new URLSearchParams(window.location.search).get("turma");
+        mode = String(requested || "adulto").toLowerCase() === "infantil" ? "infantil" : "adulto";
+        const isChild = mode === "infantil";
+        document.querySelector("#adultModeLink").classList.toggle("active", !isChild);
+        document.querySelector("#childModeLink").classList.toggle("active", isChild);
+        document.querySelector("#stepOneTitle").textContent = isChild ? "Aluno e responsável" : "Dados do aluno";
+        document.querySelector("#phoneLabel").textContent = isChild ? "WhatsApp do responsável" : "WhatsApp";
+        document.querySelector("#emailLabel").textContent = isChild ? "E-mail do responsável" : "E-mail";
+        document.querySelector("#summaryClass").textContent = isChild ? "Infantil · 19h" : "Adulto · 20h";
+        guardianFields.hidden = !isChild;
+        guardianName.required = isChild;
+        guardianCpf.required = isChild;
+        studentCpf.required = !isChild;
+        document.querySelectorAll(".adult-only").forEach((element) => {
+          element.hidden = isChild;
+        });
+      };
+
+      const cpfMask = (value) => value.replace(/\D/g, "")
+        .slice(0, 11)
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
+      const phoneMask = (value) => {
+        const digits = value.replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 10) {
+          return digits.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
+        }
+        return digits.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
+      };
+
+      const textOrDefault = (value, fallback = "Não informado") => String(value || "").trim() || fallback;
+      const longDate = () => new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date());
+
+      const drawText = (page, font, text, x, y, options = {}) => {
+        const value = textOrDefault(text, options.fallback);
+        const size = options.size || 8;
+        const maxChars = options.maxChars || 64;
+        const safeText = value.length > maxChars ? `${value.slice(0, maxChars - 1)}.` : value;
+        page.drawText(safeText, { x, y, size, font, color: PDFLib.rgb(.04, .04, .04) });
+      };
+
+      const drawLines = (page, font, text, x, y, options = {}) => {
+        const value = textOrDefault(text, options.fallback);
+        const size = options.size || 7.5;
+        const maxChars = options.maxChars || 62;
+        const maxLines = options.maxLines || 2;
+        const words = value.split(/\s+/);
+        const lines = [];
+        let line = "";
+        words.forEach((word) => {
+          const next = line ? `${line} ${word}` : word;
+          if (next.length > maxChars && line) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = next;
+          }
+        });
+        if (line) lines.push(line);
+        lines.slice(0, maxLines).forEach((item, index) => {
+          drawText(page, font, item, x, y - index * (size + 2), { size, maxChars });
+        });
+      };
+
+      const buildData = () => {
+        const values = new FormData(form);
+        const isChild = mode === "infantil";
+        const medicalInfo = values.get("hasMedicalInfo") === "sim"
+          ? values.get("medicalDetails").trim()
+          : "Nenhuma condição informada.";
+        return {
+          nome_aluno: values.get("studentName").trim(),
+          data_nascimento: values.get("birthDate"),
+          cpf_aluno: isChild ? "" : values.get("studentCpf").trim(),
+          rg_aluno: "",
+          telefone_aluno: normalizePhone(values.get("contactPhone")),
+          email_aluno: values.get("contactEmail").trim(),
+          endereco_aluno: values.get("address").trim(),
+          responsavel: isChild ? values.get("guardianName").trim() : "",
+          telefone_responsavel: isChild ? normalizePhone(values.get("contactPhone")) : "",
+          cpf_responsavel: isChild ? values.get("guardianCpf").trim() : "",
+          rg_responsavel: "",
+          turma_interesse: isChild ? "Infantil" : "Adulto",
+          experiencia: values.get("experience"),
+          melhor_horario: isChild ? "Infantil - 19h" : "Adulto - 20h",
+          vencimento_preferido: "Dia 10",
+          informacoes_medicas: medicalInfo,
+          medicamentos_continuos: "",
+          alergias: "",
+          restricoes_medicas: "",
+          contato_emergencia_nome: values.get("emergencyName").trim(),
+          contato_emergencia_telefone: normalizePhone(values.get("emergencyPhone")),
+          forma_pagamento: "A combinar",
+          data_inicio_matricula: todayIso(),
+          observacoes_financeiras: "Mensalidade R$ 85,00 com vencimento todo dia 10.",
+          pessoas_autorizadas: "",
+          observacoes: "",
+          aceite_contato: "sim",
+          confirmacao_matricula: "sim",
+          aceite_contrato: "sim",
+          contrato_arquivo: "",
+          contrato_modelo: isChild ? CONTRACTS.infantil.label : CONTRACTS.adulto.label,
+          contrato_versao: CONTRACT_VERSION,
+          email_academia: ACADEMY_EMAIL
+        };
+      };
+
+      const fillAdultContract = (pdfDoc, font, data, accepted) => {
+        const pages = pdfDoc.getPages();
+        drawText(pages[0], font, data.nome_aluno, 150, 511, { maxChars: 60 });
+        drawText(pages[0], font, data.cpf_aluno, 80, 486, { maxChars: 32 });
+        drawText(pages[0], font, formatDate(data.data_nascimento), 170, 435, { maxChars: 20 });
+        drawText(pages[0], font, data.endereco_aluno, 112, 409, { maxChars: 78 });
+        drawText(pages[0], font, data.telefone_aluno, 170, 384, { maxChars: 25 });
+        drawText(pages[0], font, data.email_aluno, 90, 358, { maxChars: 60 });
+        drawLines(pages[2], font, data.informacoes_medicas, 205, 621);
+        drawText(pages[2], font, data.contato_emergencia_nome, 215, 519, { maxChars: 56 });
+        drawText(pages[2], font, data.contato_emergencia_telefone, 230, 494, { maxChars: 25 });
+        drawText(pages[4], font, data.forma_pagamento, 175, 208, { maxChars: 36 });
+        drawText(pages[4], font, "R$ 85,00 - vencimento dia 10", 230, 183, { maxChars: 56 });
+        drawText(pages[4], font, formatDate(data.data_inicio_matricula), 190, 157, { maxChars: 20 });
+        const signed = accepted ? `Aceite digital confirmado em ${new Date().toLocaleString("pt-BR")}` : "Contrato preenchido para leitura";
+        drawText(pages[6], font, longDate(), 210, 145, { maxChars: 44 });
+        drawText(pages[6], font, data.nome_aluno, 95, 109, { maxChars: 42 });
+        drawText(pages[6], font, data.cpf_aluno, 95, 96, { maxChars: 32 });
+        drawText(pages[6], font, signed, 120, 82, { size: 7, maxChars: 62 });
+      };
+
+      const fillChildContract = (pdfDoc, font, data, accepted) => {
+        const pages = pdfDoc.getPages();
+        const age = ageFromBirthDate(data.data_nascimento);
+        drawText(pages[0], font, data.responsavel, 150, 511, { maxChars: 60 });
+        drawText(pages[0], font, data.cpf_responsavel, 80, 486, { maxChars: 32 });
+        drawText(pages[0], font, data.endereco_aluno, 112, 435, { maxChars: 78 });
+        drawText(pages[0], font, data.telefone_responsavel, 170, 409, { maxChars: 25 });
+        drawText(pages[0], font, data.email_aluno, 90, 384, { maxChars: 60 });
+        drawText(pages[0], font, data.nome_aluno, 150, 334, { maxChars: 60 });
+        drawText(pages[0], font, formatDate(data.data_nascimento), 180, 308, { maxChars: 20 });
+        drawText(pages[0], font, age === null ? "" : `${age} anos`, 90, 283, { maxChars: 16 });
+        drawLines(pages[2], font, data.informacoes_medicas, 205, 567);
+        drawText(pages[2], font, data.contato_emergencia_nome, 215, 465, { maxChars: 56 });
+        drawText(pages[2], font, data.contato_emergencia_telefone, 230, 440, { maxChars: 25 });
+        drawText(pages[4], font, data.forma_pagamento, 210, 418, { maxChars: 36 });
+        drawText(pages[4], font, "R$ 85,00 - vencimento dia 10", 230, 386, { maxChars: 56 });
+        drawText(pages[4], font, formatDate(data.data_inicio_matricula), 190, 361, { maxChars: 20 });
+        const signed = accepted ? `Aceite digital confirmado em ${new Date().toLocaleString("pt-BR")}` : "Contrato preenchido para leitura";
+        drawText(pages[6], font, longDate(), 210, 321, { maxChars: 44 });
+        drawText(pages[6], font, data.responsavel, 95, 285, { maxChars: 42 });
+        drawText(pages[6], font, data.cpf_responsavel, 95, 271, { maxChars: 32 });
+        drawText(pages[6], font, signed, 120, 257, { size: 7, maxChars: 62 });
+      };
+
+      const generateContract = async (accepted = false) => {
+        if (!window.PDFLib) throw new Error("Não foi possível carregar o gerador de contrato.");
+        const data = buildData();
+        const contract = mode === "infantil" ? CONTRACTS.infantil : CONTRACTS.adulto;
+        const response = await fetch(contract.template);
+        if (!response.ok) throw new Error("O modelo de contrato não está disponível.");
+        const pdfDoc = await PDFLib.PDFDocument.load(await response.arrayBuffer());
+        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        if (mode === "infantil") fillChildContract(pdfDoc, font, data, accepted);
+        else fillAdultContract(pdfDoc, font, data, accepted);
+        const bytes = await pdfDoc.save();
+        const suffix = accepted ? "confirmado" : "leitura";
+        const filename = `${contract.prefix}-${sanitizeFileName(data.nome_aluno)}-${suffix}.pdf`;
+        data.contrato_arquivo = filename;
+        data.contrato_modelo = contract.label;
+        return { data, filename, blob: new Blob([bytes], { type: "application/pdf" }) };
+      };
+
+      const apiErrorMessage = (payload) => {
+        if (payload && typeof payload.detail === "string") return payload.detail;
+        const labels = {
+          foto_3x4: "Foto",
+          telefone_aluno: "WhatsApp",
+          cpf_aluno: "CPF",
+          responsavel: "Responsável",
+          cpf_responsavel: "CPF do responsável",
+          contrato_pdf_aceito: "Contrato",
+          email_aluno: "E-mail",
+          endereco_aluno: "Endereço"
+        };
+        return Object.entries(payload || {})
+          .map(([key, value]) => `${labels[key] || key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+          .join(" | ") || "Não foi possível enviar a matrícula.";
+      };
+
+      const compressPhoto = async (file) => {
+        const image = await new Promise((resolve, reject) => {
+          const preview = new Image();
+          const url = URL.createObjectURL(file);
+          preview.onload = () => {
+            URL.revokeObjectURL(url);
+            resolve(preview);
+          };
+          preview.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Não foi possível processar a foto escolhida."));
+          };
+          preview.src = url;
+        });
+        const scale = Math.min(1, 1200 / image.naturalWidth, 1600 / image.naturalHeight);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = canvas.getContext("2d");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", .84));
+        if (!blob) throw new Error("Não foi possível preparar a foto para envio.");
+        return {
+          blob,
+          filename: `${sanitizeFileName(studentName.value || "aluno")}-foto.jpg`
+        };
+      };
+
+      const sendEnrollment = async (contract) => {
+        if (!API_URL) throw new Error("A matrícula online está temporariamente indisponível. Avise a academia.");
+        const body = new FormData();
+        body.set("academia_slug", ACADEMY_SLUG);
+        Object.entries(contract.data).forEach(([key, value]) => body.set(key, value || ""));
+        const photo = await compressPhoto(studentPhoto.files[0]);
+        body.set("foto_3x4", photo.blob, photo.filename);
+        body.set("contrato_pdf_aceito", contract.blob, contract.filename);
+        const response = await fetch(API_URL, { method: "POST", body });
+        const text = await response.text();
+        let payload = {};
+        try {
+          payload = text ? JSON.parse(text) : {};
+        } catch {
+          payload = { detail: text };
+        }
+        if (!response.ok) throw new Error(apiErrorMessage(payload));
+        return payload;
+      };
+
+      nextButton.addEventListener("click", () => {
+        if (!validateStep(currentStep)) return;
+        currentStep += 1;
+        renderStep();
+      });
+
+      backButton.addEventListener("click", () => {
+        currentStep -= 1;
+        renderStep();
+      });
+
+      studentPhoto.addEventListener("change", () => {
+        photoPreview.textContent = "Prévia da foto";
+        const file = studentPhoto.files[0];
+        if (!file || !file.type.startsWith("image/")) return;
+        const image = document.createElement("img");
+        const previewUrl = URL.createObjectURL(file);
+        image.src = previewUrl;
+        image.alt = "Foto selecionada";
+        image.onload = () => URL.revokeObjectURL(previewUrl);
+        photoPreview.replaceChildren(image);
+        invalidateContract();
+      });
+
+      document.querySelectorAll('input[name="hasMedicalInfo"]').forEach((input) => {
+        input.addEventListener("change", () => {
+          const hasInfo = form.elements.hasMedicalInfo.value === "sim";
+          medicalDetailsField.hidden = !hasInfo;
+          medicalDetails.required = hasInfo;
+          if (!hasInfo) medicalDetails.value = "";
+          invalidateContract();
+        });
+      });
+
+      [studentCpf, guardianCpf].forEach((input) => {
+        input.addEventListener("input", () => {
+          input.value = cpfMask(input.value);
+        });
+      });
+
+      [document.querySelector("#contactPhone"), document.querySelector("#emergencyPhone")].forEach((input) => {
+        input.addEventListener("input", () => {
+          input.value = phoneMask(input.value);
+        });
+      });
+
+      form.addEventListener("input", (event) => {
+        if (["acceptContract", "confirmEnrollment"].includes(event.target.name)) return;
+        invalidateContract();
+      });
+
+      prepareContractButton.addEventListener("click", async () => {
+        if (!validateStep(1) || !validateStep(2)) {
+          currentStep = 1;
+          renderStep();
+          showFeedback("Revise os dados obrigatórios antes de gerar o contrato.");
+          return;
+        }
+        clearFeedback();
+        prepareContractButton.disabled = true;
+        prepareContractButton.textContent = "Preparando...";
+        contractStatus.textContent = "Gerando seu contrato preenchido.";
+        try {
+          const contract = await generateContract(false);
+          if (readingContractUrl) URL.revokeObjectURL(readingContractUrl);
+          readingContractUrl = URL.createObjectURL(contract.blob);
+          readContractLink.href = readingContractUrl;
+          readContractLink.classList.add("visible");
+          contractStatus.textContent = "Contrato pronto. Abra o documento e leia para liberar o aceite.";
+        } catch (error) {
+          showFeedback(error.message);
+          contractStatus.textContent = "Não foi possível preparar o contrato.";
+        } finally {
+          prepareContractButton.disabled = false;
+          prepareContractButton.textContent = "Atualizar contrato para leitura";
+        }
+      });
+
+      readContractLink.addEventListener("click", () => {
+        contractOpened = true;
+        acceptContract.disabled = false;
+        contractAcceptRow.classList.remove("disabled");
+        contractStatus.textContent = "Contrato aberto. Depois da leitura, marque o aceite abaixo.";
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearFeedback();
+        if (!contractOpened) {
+          showFeedback("Abra e leia o contrato antes de confirmar.");
+          return;
+        }
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+        submitButton.disabled = true;
+        submitButton.textContent = "Enviando matrícula...";
+        try {
+          const contract = await generateContract(true);
+          const payload = await sendEnrollment(contract);
+          if (acceptedContractUrl) URL.revokeObjectURL(acceptedContractUrl);
+          acceptedContractUrl = URL.createObjectURL(contract.blob);
+          acceptedContractLink.href = acceptedContractUrl;
+          form.hidden = true;
+          document.querySelector("#protocol").textContent = `Protocolo ${payload.id}`;
+          successPanel.classList.add("visible");
+          successPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+          showFeedback(error.message);
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = "Confirmar matrícula";
+        }
+      });
+
+      document.querySelector("#birthDate").max = yesterdayIso();
+      applyMode();
+      renderStep();
+    })();
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -131,7 +131,7 @@
               "name": "Quais são os horários das aulas de jiu-jitsu?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "As aulas acontecem às segundas, quartas e quintas. A turma infantil treina às 18h30 e a turma adulta às 19h30."
+                "text": "As aulas acontecem às segundas, quartas e quintas. A turma infantil treina às 19h e a turma adulta às 20h."
               }
             },
             {
@@ -179,11 +179,16 @@
     }
 
     html {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
       scroll-behavior: smooth;
       scroll-padding-top: 6rem;
     }
 
     body {
+      width: 100%;
+      max-width: 100%;
       margin: 0;
       min-height: 100vh;
       overflow-x: hidden;
@@ -382,10 +387,6 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
-    .menu-toggle[hidden] {
-      display: none !important;
-    }
-
     .menu-toggle span {
       display: block;
       width: 20px;
@@ -429,6 +430,16 @@
       color: var(--gold);
       background: rgba(255, 255, 255, 0.03);
       border-color: rgba(216, 179, 106, 0.36);
+    }
+
+    .card > .btn {
+      align-self: flex-start;
+      margin-top: auto;
+    }
+
+    .schedule-card > .btn {
+      width: 100%;
+      margin-top: 0.25rem;
     }
 
     .hero {
@@ -1027,6 +1038,9 @@
       }
     }
 
+    /* =========================
+       Responsividade mobile e tablet
+       ========================= */
     @media (max-width: 1120px) {
       .schedule-layout {
         grid-template-columns: 1fr;
@@ -1043,6 +1057,124 @@
     }
 
     @media (max-width: 1024px) {
+      .site-header {
+        z-index: 120;
+      }
+
+      .nav-shell {
+        position: relative;
+        min-height: 72px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.75rem 0;
+      }
+
+      .brand {
+        min-width: 0;
+      }
+
+      .brand-copy {
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .brand-copy strong,
+      .brand-copy small {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .menu-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        cursor: pointer;
+        z-index: 140;
+      }
+
+      .menu-toggle span {
+        width: 22px;
+      }
+
+      .menu-toggle[aria-expanded="true"],
+      .menu-toggle.is-active {
+        border-color: rgba(216, 179, 106, 0.44);
+        background: rgba(216, 179, 106, 0.09);
+      }
+
+      .menu-toggle[aria-expanded="true"] span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      .menu-toggle[aria-expanded="true"] span:nth-child(2) {
+        opacity: 0;
+      }
+
+      .menu-toggle[aria-expanded="true"] span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      .menu {
+        position: absolute;
+        inset-inline: 0;
+        top: calc(100% + 0.6rem);
+        z-index: 130;
+        width: 100%;
+        max-height: calc(100vh - 6rem);
+        max-height: min(calc(100svh - 6rem), 620px);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.55rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        padding: 0.85rem;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: linear-gradient(180deg, #090909, #111111);
+        box-shadow: var(--shadow);
+        transform: translateY(-10px);
+        transition: opacity 0.24s ease, transform 0.24s ease, visibility 0.24s ease;
+      }
+
+      .menu.is-open {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      .menu a:not(.btn) {
+        width: 100%;
+        min-height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0.78rem 0.95rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.035);
+        text-align: left;
+      }
+
+      .menu .btn {
+        width: 100%;
+        min-height: 50px;
+        border-radius: 14px;
+      }
+
+      body.menu-open {
+        overflow: hidden;
+      }
+
       .hero-grid,
       .split-grid,
       .contact-grid,
@@ -1072,66 +1204,6 @@
         width: min(94vw, var(--max));
       }
 
-      .nav-shell {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 0.85rem;
-      }
-
-      .menu-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .menu-toggle[aria-expanded="true"] span:nth-child(1) {
-        transform: translateY(7px) rotate(45deg);
-      }
-
-      .menu-toggle[aria-expanded="true"] span:nth-child(2) {
-        opacity: 0;
-      }
-
-      .menu-toggle[aria-expanded="true"] span:nth-child(3) {
-        transform: translateY(-7px) rotate(-45deg);
-      }
-
-      .menu {
-        grid-column: 1 / -1;
-        gap: 0.55rem;
-      }
-
-      .menu-ready .menu {
-        width: 100%;
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        padding: 0 0.85rem;
-        border: 1px solid transparent;
-        border-radius: 18px;
-        background: rgba(9, 9, 9, 0.96);
-        box-shadow: var(--shadow);
-        transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.25s ease, border-color 0.25s ease;
-      }
-
-      .menu-ready .menu.is-open {
-        max-height: 520px;
-        opacity: 1;
-        padding: 0.85rem;
-        border-color: var(--line);
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .menu-ready .menu a:not(.btn) {
-        width: 100%;
-        padding: 0.75rem 0.9rem;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.03);
-      }
-
       .menu .btn,
       .cta-strip .btn,
       .tag-row span {
@@ -1149,7 +1221,7 @@
       }
 
       .schedule-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .schedule-card {
@@ -1174,7 +1246,23 @@
       }
     }
 
+    @media (min-width: 1025px) {
+      .menu-toggle {
+        display: none !important;
+      }
+
+      .menu {
+        max-height: none;
+        opacity: 1;
+        overflow: visible;
+      }
+    }
+
     @media (max-width: 640px) {
+      .container {
+        width: min(94vw, 100%);
+      }
+
       .hero {
         padding-top: 3.25rem;
       }
@@ -1205,10 +1293,15 @@
 
       .gallery-photo,
       .gallery-photo--portrait {
-        height: 230px;
+        aspect-ratio: 4 / 3;
+        height: auto;
       }
 
-      .schedule-grid {
+      .cards-grid,
+      .schedule-grid,
+      .belt-grid,
+      .gallery-grid,
+      .faq-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1223,6 +1316,8 @@
       .whatsapp-float {
         width: 56px;
         height: 56px;
+        right: 14px;
+        bottom: 14px;
       }
     }
 
@@ -1251,8 +1346,11 @@
 
       .eyebrow,
       .chip {
+        max-width: 100%;
         font-size: 0.72rem;
+        line-height: 1.35;
         letter-spacing: 0.12em;
+        white-space: normal;
       }
 
       .lead,
@@ -1274,12 +1372,41 @@
       }
 
       .btn {
+        width: 100%;
         min-height: 48px;
         padding: 0 18px;
       }
 
+      .stack-list li,
+      .mini-list li,
+      .value-list li,
+      .contact-list li {
+        padding: 0.85rem 0.9rem;
+      }
+
+      .footer-credit-row {
+        align-items: stretch;
+      }
+
+      .footer-signature {
+        display: flex;
+        flex-wrap: wrap;
+        line-height: 1.35;
+        letter-spacing: 0.05em;
+      }
+
+      .footer-mini-cta {
+        width: 100%;
+      }
+
       .schedule-card-time {
         font-size: 1.45rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .schedule-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -1312,7 +1439,7 @@
         </span>
       </a>
 
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" aria-label="Abrir menu" hidden>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" aria-label="Abrir menu">
         <span></span>
         <span></span>
         <span></span>
@@ -1399,12 +1526,14 @@
             <span class="eyebrow">Infantil</span>
             <h3>Jiu-jitsu infantil com disciplina e autoconfiança</h3>
             <p>Aulas pensadas para desenvolver coordenação, respeito, foco e evolução gradual em um ambiente acolhedor no bairro São Luís.</p>
+            <a class="btn btn-secondary" href="matricula.html?turma=infantil">Matrícula infantil</a>
           </article>
 
           <article class="card reveal delay-2">
             <span class="eyebrow">Adulto</span>
             <h3>Jiu-jitsu adulto, defesa pessoal e preparo físico</h3>
             <p>Turma voltada para condicionamento, repertório técnico, defesa pessoal e evolução contínua para quem busca treino sério em Volta Redonda/RJ.</p>
+            <a class="btn btn-secondary" href="matricula.html?turma=adulto">Matrícula adulto</a>
           </article>
 
           <article class="card reveal delay-3">
@@ -1438,6 +1567,7 @@
               <li><strong>Foco:</strong> disciplina, coordenação e base técnica</li>
               <li><strong>Indicação:</strong> crianças em fase de aprendizado no tatame</li>
             </ul>
+            <a class="btn btn-secondary" href="matricula.html?turma=infantil">Fazer matrícula infantil</a>
           </article>
 
           <article class="card schedule-card">
@@ -1448,6 +1578,7 @@
               <li><strong>Foco:</strong> técnica, preparo físico, defesa pessoal e evolução</li>
               <li><strong>Indicação:</strong> adultos, iniciantes e alunos em progressão</li>
             </ul>
+            <a class="btn btn-secondary" href="matricula.html?turma=adulto">Fazer matrícula adulto</a>
           </article>
 
           <article class="card schedule-card schedule-card--trial">
@@ -1743,7 +1874,7 @@
 
           <article class="card reveal delay">
             <h3>Quais são os horários das aulas?</h3>
-            <p>As aulas acontecem às segundas, quartas e quintas. A turma infantil treina às 18h30 e a turma adulta às 19h30.</p>
+            <p>As aulas acontecem às segundas, quartas e quintas. A turma infantil treina às 19h e a turma adulta às 20h00.</p>
           </article>
 
           <article class="card reveal delay-2">
@@ -1767,7 +1898,7 @@
         <p class="footer-note">Academia de jiu-jitsu em Volta Redonda com turmas infantil e adulta, aula experimental, defesa pessoal feminina e atendimento rápido no WhatsApp.</p>
         <div class="footer-credit-row">
           <p class="footer-signature">Victor Frossard - Software Engineer</p>
-          <a class="footer-mini-cta" href="https://wa.me/5524981123619?text=Ol%C3%A1%2C%20quero%20pedir%20um%20or%C3%A7amento%20de%20site" target="_blank" rel="noopener noreferrer">Projetos web</a>
+          <a class="footer-mini-cta" href="https://wa.me/5524998421597?text=Ol%C3%A1%2C%20quero%20pedir%20um%20or%C3%A7amento%20de%20site" target="_blank" rel="noopener noreferrer">Projetos web</a>
         </div>
       </div>
 
@@ -1814,66 +1945,99 @@
       });
 
       const navShell = document.querySelector(".nav-shell");
-      const toggle = document.querySelector(".menu-toggle");
-      const menu = document.getElementById("menu-principal");
+      const menuToggle = document.querySelector(".menu-toggle");
+      const menu = document.querySelector("#menu-principal");
 
-      if (!navShell || !toggle || !menu) {
-        return;
-      }
+      if (menuToggle && menu) {
+        document.body.classList.add("menu-ready");
+        menuToggle.removeAttribute("hidden");
 
-      const mediaQuery = window.matchMedia("(max-width: 860px)");
+        const mobileMenuQuery = window.matchMedia("(max-width: 1024px)");
 
-      function setMenuState(isOpen) {
-        toggle.setAttribute("aria-expanded", String(isOpen));
-        toggle.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
-        menu.classList.toggle("is-open", isOpen);
-      }
+        const setMenuA11y = function (isOpen) {
+          menuToggle.classList.toggle("is-active", isOpen);
+          menuToggle.setAttribute("aria-expanded", String(isOpen));
+          menuToggle.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
 
-      function syncMenu() {
-        const isMobile = mediaQuery.matches;
+          if (mobileMenuQuery.matches) {
+            menu.setAttribute("aria-hidden", String(!isOpen));
 
-        navShell.classList.toggle("menu-ready", isMobile);
-        toggle.hidden = !isMobile;
+            if ("inert" in menu) {
+              menu.inert = !isOpen;
+            }
+          } else {
+            menu.removeAttribute("aria-hidden");
 
-        if (!isMobile) {
-          setMenuState(false);
-        } else if (!menu.classList.contains("is-open")) {
-          setMenuState(false);
-        }
-      }
+            if ("inert" in menu) {
+              menu.inert = false;
+            }
+          }
+        };
 
-      toggle.addEventListener("click", function () {
-        const isOpen = toggle.getAttribute("aria-expanded") === "true";
-        setMenuState(!isOpen);
-      });
+        const closeMenu = function () {
+          menu.classList.remove("is-open");
+          document.body.classList.remove("menu-open");
+          setMenuA11y(false);
+        };
 
-      menu.querySelectorAll("a").forEach(function (link) {
-        link.addEventListener("click", function () {
-          if (mediaQuery.matches) {
-            setMenuState(false);
+        const openMenu = function () {
+          if (!mobileMenuQuery.matches) {
+            return;
+          }
+
+          menu.classList.add("is-open");
+          document.body.classList.add("menu-open");
+          setMenuA11y(true);
+        };
+
+        const syncMenuMode = function () {
+          if (mobileMenuQuery.matches) {
+            closeMenu();
+          } else {
+            menu.classList.remove("is-open");
+            document.body.classList.remove("menu-open");
+            setMenuA11y(false);
+          }
+        };
+
+        menuToggle.addEventListener("click", function () {
+          const isOpen = menu.classList.contains("is-open");
+
+          if (isOpen) {
+            closeMenu();
+          } else {
+            openMenu();
           }
         });
-      });
 
-      document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && mediaQuery.matches) {
-          setMenuState(false);
+        menu.querySelectorAll("a").forEach(function (link) {
+          link.addEventListener("click", function () {
+            if (mobileMenuQuery.matches) {
+              closeMenu();
+            }
+          });
+        });
+
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && menu.classList.contains("is-open")) {
+            closeMenu();
+          }
+        });
+
+        document.addEventListener("click", function (event) {
+          if (mobileMenuQuery.matches && navShell && menu.classList.contains("is-open") && !navShell.contains(event.target)) {
+            closeMenu();
+          }
+        });
+
+        if (mobileMenuQuery.addEventListener) {
+          mobileMenuQuery.addEventListener("change", syncMenuMode);
+        } else if (mobileMenuQuery.addListener) {
+          mobileMenuQuery.addListener(syncMenuMode);
         }
-      });
 
-      document.addEventListener("click", function (event) {
-        if (mediaQuery.matches && menu.classList.contains("is-open") && !navShell.contains(event.target)) {
-          setMenuState(false);
-        }
-      });
-
-      if (typeof mediaQuery.addEventListener === "function") {
-        mediaQuery.addEventListener("change", syncMenu);
-      } else if (typeof mediaQuery.addListener === "function") {
-        mediaQuery.addListener(syncMenu);
+        syncMenuMode();
       }
-
-      syncMenu();
     });
   </script>
 </body>
