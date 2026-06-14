@@ -133,6 +133,27 @@
       padding: 22px 0 max(32px, env(safe-area-inset-bottom));
     }
 
+    .enrollment-footer {
+      width: min(calc(100% - 24px), 720px);
+      margin: 0 auto;
+      padding: 18px 0 max(22px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-align: center;
+    }
+
+    .enrollment-footer p {
+      margin: 0;
+    }
+
+    .enrollment-footer strong {
+      color: var(--gold-light);
+      font-weight: 800;
+    }
+
     .heading {
       margin-bottom: 18px;
     }
@@ -873,6 +894,10 @@
     </section>
   </main>
 
+  <footer class="enrollment-footer">
+    <p><strong>Victor Frossard</strong> - Software Engineer</p>
+  </footer>
+
   <script src="vendor/pdf-lib.min.js"></script>
   <script src="matricula-config.js"></script>
   <script>
@@ -882,7 +907,8 @@
       const API_URL = config.apiUrl || (localHost ? "http://127.0.0.1:8000/api/matriculas-online/" : "");
       const ACADEMY_SLUG = config.academySlug || "gilson-batista";
       const ACADEMY_EMAIL = config.academyEmail || "gilsonbatista7@hotmail.com";
-      const CONTRACT_VERSION = config.contractVersion || "v3-2026-06";
+      const PROFESSOR_NAME = config.professorName || "Gilson Batista";
+      const CONTRACT_VERSION = config.contractVersion || "v5-2026-06";
       const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
       const CONTRACTS = {
         adulto: { template: "contrato-adulto-template.pdf", label: "Contrato Adulto", prefix: "contrato-adulto" },
@@ -1156,6 +1182,9 @@
         drawText(pages[6], font, data.nome_aluno, 95, 109, { maxChars: 42 });
         drawText(pages[6], font, data.cpf_aluno, 95, 96, { maxChars: 32 });
         drawText(pages[6], font, signed, 120, 82, { size: 7, maxChars: 62 });
+        drawText(pages[6], font, PROFESSOR_NAME, 405, 109, { size: 8, maxChars: 32 });
+        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 96, { size: 7, maxChars: 44 });
+        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 70, { size: 7, maxChars: 44 });
       };
 
       const fillChildContract = (pdfDoc, font, data, accepted) => {
@@ -1180,6 +1209,9 @@
         drawText(pages[6], font, data.responsavel, 95, 285, { maxChars: 42 });
         drawText(pages[6], font, data.cpf_responsavel, 95, 271, { maxChars: 32 });
         drawText(pages[6], font, signed, 120, 257, { size: 7, maxChars: 62 });
+        drawText(pages[6], font, PROFESSOR_NAME, 405, 285, { size: 8, maxChars: 32 });
+        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 271, { size: 7, maxChars: 44 });
+        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 245, { size: 7, maxChars: 44 });
       };
 
       const generateContract = async (accepted = false) => {
