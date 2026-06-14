@@ -2,5 +2,5 @@ window.MATRICULA_CONFIG = {
   apiUrl: "https://jiu-crm-backend.onrender.com/api/matriculas-online/",
   academySlug: "gilson-batista",
   academyEmail: "gilsonbatista7@hotmail.com",
-  contractVersion: "v3-2026-06"
+  contractVersion: "v4-2026-06"
 };
