@@ -555,6 +555,41 @@
       grid-template-columns: 1fr;
     }
 
+    .submit-progress {
+      display: none;
+      grid-column: 1 / -1;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .submit-progress.visible {
+      display: grid;
+    }
+
+    .submit-progress-track {
+      height: 4px;
+      overflow: hidden;
+      border-radius: 2px;
+      background: #302d27;
+    }
+
+    .submit-progress-track::after {
+      display: block;
+      width: 42%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--gold-light);
+      content: "";
+      animation: submit-progress 1.1s ease-in-out infinite;
+    }
+
+    @keyframes submit-progress {
+      from { transform: translateX(-110%); }
+      to { transform: translateX(340%); }
+    }
+
     .button {
       min-height: 48px;
       border: 0;
@@ -876,6 +911,10 @@
         <p class="feedback" id="feedback" role="alert"></p>
 
         <div class="form-actions">
+          <div class="submit-progress" id="submitProgress" role="status" aria-live="polite">
+            <span id="submitProgressText">Preparando matrícula...</span>
+            <span class="submit-progress-track" aria-hidden="true"></span>
+          </div>
           <button class="button secondary" id="backButton" type="button" hidden>Voltar</button>
           <button class="button primary" id="nextButton" type="button">Continuar</button>
           <button class="button primary" id="submitButton" type="submit" hidden>Confirmar matrícula</button>
@@ -921,6 +960,8 @@
       const nextButton = document.querySelector("#nextButton");
       const backButton = document.querySelector("#backButton");
       const submitButton = document.querySelector("#submitButton");
+      const submitProgress = document.querySelector("#submitProgress");
+      const submitProgressText = document.querySelector("#submitProgressText");
       const formActions = document.querySelector(".form-actions");
       const feedback = document.querySelector("#feedback");
       const guardianFields = document.querySelector("#guardianFields");
@@ -943,6 +984,33 @@
       let contractOpened = false;
       let readingContractUrl = "";
       let acceptedContractUrl = "";
+      let backendWarmupPromise = null;
+      let preparedPhoto = null;
+      const contractTemplateCache = new Map();
+
+      const warmUpBackend = () => {
+        if (!API_URL || backendWarmupPromise) return backendWarmupPromise;
+        backendWarmupPromise = fetch(API_URL, {
+          method: "OPTIONS",
+          mode: "cors",
+          cache: "no-store",
+          credentials: "omit"
+        }).catch(() => null).finally(() => {
+          window.setTimeout(() => {
+            backendWarmupPromise = null;
+          }, 5 * 60 * 1000);
+        });
+        return backendWarmupPromise;
+      };
+
+      const setSubmitProgress = (message) => {
+        submitProgressText.textContent = message;
+        submitProgress.classList.add("visible");
+      };
+
+      const clearSubmitProgress = () => {
+        submitProgress.classList.remove("visible");
+      };
 
       const todayIso = () => {
         const now = new Date();
@@ -1230,9 +1298,17 @@
         if (!window.PDFLib) throw new Error("Não foi possível carregar o gerador de contrato.");
         const data = buildData();
         const contract = mode === "infantil" ? CONTRACTS.infantil : CONTRACTS.adulto;
-        const response = await fetch(contract.template);
-        if (!response.ok) throw new Error("O modelo de contrato não está disponível.");
-        const pdfDoc = await PDFLib.PDFDocument.load(await response.arrayBuffer());
+        if (!contractTemplateCache.has(contract.template)) {
+          contractTemplateCache.set(contract.template, fetch(contract.template).then(async (response) => {
+            if (!response.ok) throw new Error("O modelo de contrato não está disponível.");
+            return response.arrayBuffer();
+          }).catch((error) => {
+            contractTemplateCache.delete(contract.template);
+            throw error;
+          }));
+        }
+        const templateBytes = await contractTemplateCache.get(contract.template);
+        const pdfDoc = await PDFLib.PDFDocument.load(templateBytes);
         const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
         if (mode === "infantil") fillChildContract(pdfDoc, font, data, accepted);
         else fillAdultContract(pdfDoc, font, data, accepted);
@@ -1275,7 +1351,7 @@
           };
           preview.src = url;
         });
-        const scale = Math.min(1, 1200 / image.naturalWidth, 1600 / image.naturalHeight);
+        const scale = Math.min(1, 900 / image.naturalWidth, 1200 / image.naturalHeight);
         const canvas = document.createElement("canvas");
         canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
         canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
@@ -1283,7 +1359,7 @@
         context.fillStyle = "#ffffff";
         context.fillRect(0, 0, canvas.width, canvas.height);
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", .84));
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", .78));
         if (!blob) throw new Error("Não foi possível preparar a foto para envio.");
         return {
           blob,
@@ -1291,14 +1367,29 @@
         };
       };
 
-      const sendEnrollment = async (contract) => {
+      const prepareSelectedPhoto = () => {
+        const file = studentPhoto.files[0];
+        if (!file) {
+          preparedPhoto = null;
+          return null;
+        }
+        if (preparedPhoto?.file === file) return preparedPhoto.promise;
+        const promise = compressPhoto(file);
+        promise.catch(() => null);
+        preparedPhoto = { file, promise };
+        return promise;
+      };
+
+      const sendEnrollment = async (contract, onProgress = () => {}) => {
         if (!API_URL) throw new Error("A matrícula online está temporariamente indisponível. Avise a academia.");
         const body = new FormData();
         body.set("academia_slug", ACADEMY_SLUG);
         Object.entries(contract.data).forEach(([key, value]) => body.set(key, value || ""));
-        const photo = await compressPhoto(studentPhoto.files[0]);
+        onProgress("Otimizando a foto...");
+        const photo = await prepareSelectedPhoto();
         body.set("foto_3x4", photo.blob, photo.filename);
         body.set("contrato_pdf_aceito", contract.blob, contract.filename);
+        onProgress("Enviando dados, foto e contrato...");
         const response = await fetch(API_URL, { method: "POST", body });
         const text = await response.text();
         let payload = {};
@@ -1324,8 +1415,11 @@
 
       studentPhoto.addEventListener("change", () => {
         photoPreview.textContent = "Prévia da foto";
+        preparedPhoto = null;
         const file = studentPhoto.files[0];
         if (!file || !file.type.startsWith("image/")) return;
+        prepareSelectedPhoto();
+        warmUpBackend();
         const image = document.createElement("img");
         const previewUrl = URL.createObjectURL(file);
         image.src = previewUrl;
@@ -1409,9 +1503,20 @@
         }
         submitButton.disabled = true;
         submitButton.textContent = "Enviando matrícula...";
+        setSubmitProgress("Preparando contrato e arquivos...");
+        warmUpBackend();
+        let slowServerTimer = 0;
+        let verySlowServerTimer = 0;
         try {
           const contract = await generateContract(true);
-          const payload = await sendEnrollment(contract);
+          const payloadPromise = sendEnrollment(contract, setSubmitProgress);
+          slowServerTimer = window.setTimeout(() => {
+            setSubmitProgress("O servidor está iniciando. Isso pode levar alguns segundos...");
+          }, 7000);
+          verySlowServerTimer = window.setTimeout(() => {
+            setSubmitProgress("Quase pronto. Mantenha esta página aberta...");
+          }, 25000);
+          const payload = await payloadPromise;
           if (acceptedContractUrl) URL.revokeObjectURL(acceptedContractUrl);
           acceptedContractUrl = URL.createObjectURL(contract.blob);
           acceptedContractLink.href = acceptedContractUrl;
@@ -1422,12 +1527,16 @@
         } catch (error) {
           showFeedback(error.message);
         } finally {
+          window.clearTimeout(slowServerTimer);
+          window.clearTimeout(verySlowServerTimer);
+          clearSubmitProgress();
           submitButton.disabled = false;
           submitButton.textContent = "Confirmar matrícula";
         }
       });
 
       document.querySelector("#birthDate").max = yesterdayIso();
+      warmUpBackend();
       applyMode();
       renderStep();
     })();
