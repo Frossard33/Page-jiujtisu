@@ -908,7 +908,7 @@
       const ACADEMY_SLUG = config.academySlug || "gilson-batista";
       const ACADEMY_EMAIL = config.academyEmail || "gilsonbatista7@hotmail.com";
       const PROFESSOR_NAME = config.professorName || "Gilson Batista";
-      const CONTRACT_VERSION = config.contractVersion || "v5-2026-06";
+      const CONTRACT_VERSION = config.contractVersion || "v6-2026-06";
       const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
       const CONTRACTS = {
         adulto: { template: "contrato-adulto-template.pdf", label: "Contrato Adulto", prefix: "contrato-adulto" },
@@ -1087,7 +1087,14 @@
       };
 
       const textOrDefault = (value, fallback = "Não informado") => String(value || "").trim() || fallback;
-      const longDate = () => new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date());
+      const contractDateParts = () => {
+        const now = new Date();
+        return {
+          day: String(now.getDate()).padStart(2, "0"),
+          month: new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(now),
+          year: String(now.getFullYear())
+        };
+      };
 
       const drawText = (page, font, text, x, y, options = {}) => {
         const value = textOrDefault(text, options.fallback);
@@ -1165,53 +1172,58 @@
 
       const fillAdultContract = (pdfDoc, font, data, accepted) => {
         const pages = pdfDoc.getPages();
-        drawText(pages[0], font, data.nome_aluno, 150, 511, { maxChars: 60 });
-        drawText(pages[0], font, data.cpf_aluno, 80, 486, { maxChars: 32 });
-        drawText(pages[0], font, formatDate(data.data_nascimento), 170, 435, { maxChars: 20 });
-        drawText(pages[0], font, data.endereco_aluno, 112, 409, { maxChars: 78 });
-        drawText(pages[0], font, data.telefone_aluno, 170, 384, { maxChars: 25 });
-        drawText(pages[0], font, data.email_aluno, 90, 358, { maxChars: 60 });
-        drawLines(pages[2], font, data.informacoes_medicas, 205, 621);
-        drawText(pages[2], font, data.contato_emergencia_nome, 215, 519, { maxChars: 56 });
-        drawText(pages[2], font, data.contato_emergencia_telefone, 230, 494, { maxChars: 25 });
-        drawText(pages[4], font, data.forma_pagamento, 175, 208, { maxChars: 36 });
-        drawText(pages[4], font, "R$ 85,00 - vencimento dia 10", 230, 183, { maxChars: 56 });
-        drawText(pages[4], font, formatDate(data.data_inicio_matricula), 190, 157, { maxChars: 20 });
+        drawText(pages[0], font, data.nome_aluno, 240, 511, { maxChars: 54 });
+        drawText(pages[0], font, data.cpf_aluno, 240, 491, { maxChars: 32 });
+        drawText(pages[0], font, formatDate(data.data_nascimento), 240, 471, { maxChars: 20 });
+        drawText(pages[0], font, data.endereco_aluno, 240, 451, { maxChars: 64 });
+        drawText(pages[0], font, data.telefone_aluno, 240, 431, { maxChars: 25 });
+        drawText(pages[0], font, data.email_aluno, 240, 411, { maxChars: 54 });
+        drawLines(pages[1], font, data.informacoes_medicas, 305, 147, { size: 7, maxChars: 54, maxLines: 2 });
+        drawText(pages[1], font, data.contato_emergencia_nome, 305, 71, { size: 7, maxChars: 48 });
+        drawText(pages[2], font, data.contato_emergencia_telefone, 305, 704, { size: 7, maxChars: 25 });
+        drawText(pages[4], font, formatDate(data.data_inicio_matricula), 315, 684, { size: 7, maxChars: 20 });
+        drawText(pages[4], font, data.observacoes_financeiras, 315, 664, { size: 7, maxChars: 52 });
         const signed = accepted ? `Aceite digital confirmado em ${new Date().toLocaleString("pt-BR")}` : "Contrato preenchido para leitura";
-        drawText(pages[6], font, longDate(), 210, 145, { maxChars: 44 });
-        drawText(pages[6], font, data.nome_aluno, 95, 109, { maxChars: 42 });
-        drawText(pages[6], font, data.cpf_aluno, 95, 96, { maxChars: 32 });
-        drawText(pages[6], font, signed, 120, 82, { size: 7, maxChars: 62 });
-        drawText(pages[6], font, PROFESSOR_NAME, 405, 109, { size: 8, maxChars: 32 });
-        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 96, { size: 7, maxChars: 44 });
-        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 70, { size: 7, maxChars: 44 });
+        const contractDate = contractDateParts();
+        drawText(pages[5], font, contractDate.day, 237, 291, { size: 8, maxChars: 2 });
+        drawText(pages[5], font, contractDate.month, 280, 291, { size: 8, maxChars: 18 });
+        drawText(pages[5], font, contractDate.year, 421, 291, { size: 8, maxChars: 4 });
+        drawText(pages[5], font, data.nome_aluno, 110, 247, { size: 8, maxChars: 38 });
+        drawText(pages[5], font, data.cpf_aluno, 110, 227, { size: 8, maxChars: 28 });
+        drawText(pages[5], font, signed, 120, 201, { size: 7, maxChars: 48 });
+        drawText(pages[5], font, PROFESSOR_NAME, 390, 247, { size: 8, maxChars: 28 });
+        drawText(pages[5], font, `${PROFESSOR_NAME} - assinatura digital`, 390, 227, { size: 7, maxChars: 38 });
+        drawText(pages[5], font, `${PROFESSOR_NAME} - assinatura digital`, 390, 196, { size: 7, maxChars: 38 });
       };
 
       const fillChildContract = (pdfDoc, font, data, accepted) => {
         const pages = pdfDoc.getPages();
         const age = ageFromBirthDate(data.data_nascimento);
-        drawText(pages[0], font, data.responsavel, 150, 511, { maxChars: 60 });
-        drawText(pages[0], font, data.cpf_responsavel, 80, 486, { maxChars: 32 });
-        drawText(pages[0], font, data.endereco_aluno, 112, 435, { maxChars: 78 });
-        drawText(pages[0], font, data.telefone_responsavel, 170, 409, { maxChars: 25 });
-        drawText(pages[0], font, data.email_aluno, 90, 384, { maxChars: 60 });
-        drawText(pages[0], font, data.nome_aluno, 150, 334, { maxChars: 60 });
-        drawText(pages[0], font, formatDate(data.data_nascimento), 180, 308, { maxChars: 20 });
-        drawText(pages[0], font, age === null ? "" : `${age} anos`, 90, 283, { maxChars: 16 });
-        drawLines(pages[2], font, data.informacoes_medicas, 205, 567);
-        drawText(pages[2], font, data.contato_emergencia_nome, 215, 465, { maxChars: 56 });
-        drawText(pages[2], font, data.contato_emergencia_telefone, 230, 440, { maxChars: 25 });
-        drawText(pages[4], font, data.forma_pagamento, 210, 418, { maxChars: 36 });
-        drawText(pages[4], font, "R$ 85,00 - vencimento dia 10", 230, 386, { maxChars: 56 });
-        drawText(pages[4], font, formatDate(data.data_inicio_matricula), 190, 361, { maxChars: 20 });
+        drawText(pages[0], font, data.responsavel, 240, 511, { maxChars: 54 });
+        drawText(pages[0], font, data.cpf_responsavel, 240, 491, { maxChars: 32 });
+        drawText(pages[0], font, data.endereco_aluno, 240, 471, { maxChars: 64 });
+        drawText(pages[0], font, data.telefone_responsavel, 240, 451, { maxChars: 25 });
+        drawText(pages[0], font, data.email_aluno, 240, 431, { maxChars: 54 });
+        drawText(pages[0], font, data.nome_aluno, 240, 397, { maxChars: 54 });
+        drawText(pages[0], font, formatDate(data.data_nascimento), 240, 377, { maxChars: 20 });
+        drawText(pages[0], font, age === null ? "" : `${age} anos`, 240, 357, { maxChars: 16 });
+        drawLines(pages[1], font, data.informacoes_medicas, 305, 92, { size: 7, maxChars: 54, maxLines: 2 });
+        drawText(pages[2], font, data.contato_emergencia_nome, 305, 666, { size: 7, maxChars: 48 });
+        drawText(pages[2], font, data.contato_emergencia_telefone, 305, 647, { size: 7, maxChars: 25 });
+        drawText(pages[3], font, data.forma_pagamento, 315, 159, { size: 7, maxChars: 36 });
+        drawText(pages[3], font, formatDate(data.data_inicio_matricula), 315, 119, { size: 7, maxChars: 20 });
+        drawText(pages[3], font, data.observacoes_financeiras, 315, 99, { size: 7, maxChars: 48 });
         const signed = accepted ? `Aceite digital confirmado em ${new Date().toLocaleString("pt-BR")}` : "Contrato preenchido para leitura";
-        drawText(pages[6], font, longDate(), 210, 321, { maxChars: 44 });
-        drawText(pages[6], font, data.responsavel, 95, 285, { maxChars: 42 });
-        drawText(pages[6], font, data.cpf_responsavel, 95, 271, { maxChars: 32 });
-        drawText(pages[6], font, signed, 120, 257, { size: 7, maxChars: 62 });
-        drawText(pages[6], font, PROFESSOR_NAME, 405, 285, { size: 8, maxChars: 32 });
-        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 271, { size: 7, maxChars: 44 });
-        drawText(pages[6], font, `${PROFESSOR_NAME} - assinatura digital`, 380, 245, { size: 7, maxChars: 44 });
+        const contractDate = contractDateParts();
+        drawText(pages[5], font, contractDate.day, 237, 281, { size: 8, maxChars: 2 });
+        drawText(pages[5], font, contractDate.month, 280, 281, { size: 8, maxChars: 18 });
+        drawText(pages[5], font, contractDate.year, 421, 281, { size: 8, maxChars: 4 });
+        drawText(pages[5], font, data.responsavel, 110, 237, { size: 8, maxChars: 38 });
+        drawText(pages[5], font, data.cpf_responsavel, 110, 217, { size: 8, maxChars: 28 });
+        drawText(pages[5], font, signed, 120, 191, { size: 7, maxChars: 48 });
+        drawText(pages[5], font, PROFESSOR_NAME, 390, 237, { size: 8, maxChars: 28 });
+        drawText(pages[5], font, `${PROFESSOR_NAME} - assinatura digital`, 390, 217, { size: 7, maxChars: 38 });
+        drawText(pages[5], font, `${PROFESSOR_NAME} - assinatura digital`, 390, 186, { size: 7, maxChars: 38 });
       };
 
       const generateContract = async (accepted = false) => {

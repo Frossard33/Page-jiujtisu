@@ -3,5 +3,5 @@ window.MATRICULA_CONFIG = {
   academySlug: "gilson-batista",
   academyEmail: "gilsonbatista7@hotmail.com",
   professorName: "Gilson Batista",
-  contractVersion: "v5-2026-06"
+  contractVersion: "v6-2026-06"
 };
