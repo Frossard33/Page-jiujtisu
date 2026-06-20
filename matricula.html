@@ -948,6 +948,7 @@
       const ACADEMY_EMAIL = config.academyEmail || "gilsonbatista7@hotmail.com";
       const PROFESSOR_NAME = config.professorName || "Gilson Batista";
       const CONTRACT_VERSION = config.contractVersion || "v6-2026-06";
+      const CONTRACT_ASSET_BASE_URL = config.contractAssetBaseUrl || "";
       const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
       const CONTRACTS = {
         adulto: { template: "contrato-adulto-template.pdf", label: "Contrato Adulto", prefix: "contrato-adulto" },
@@ -1294,15 +1295,40 @@
         drawText(pages[5], font, `${PROFESSOR_NAME} - assinatura digital`, 390, 186, { size: 7, maxChars: 38 });
       };
 
+      const fetchContractTemplate = async (template) => {
+        const candidates = [];
+        if (window.location.protocol !== "file:") {
+          candidates.push(new URL(template, window.location.href).href);
+        }
+        if (CONTRACT_ASSET_BASE_URL) {
+          candidates.push(new URL(template, CONTRACT_ASSET_BASE_URL).href);
+        }
+
+        const urls = [...new Set(candidates)];
+        let lastError = null;
+        for (const url of urls) {
+          try {
+            const response = await fetch(url, { cache: "no-store" });
+            if (response.ok) return response.arrayBuffer();
+            lastError = new Error(`Contrato indisponível (${response.status}).`);
+          } catch (error) {
+            lastError = error;
+          }
+        }
+
+        throw new Error(
+          lastError
+            ? "Não foi possível carregar o contrato. Verifique sua conexão e tente novamente."
+            : "O endereço do contrato não foi configurado."
+        );
+      };
+
       const generateContract = async (accepted = false) => {
         if (!window.PDFLib) throw new Error("Não foi possível carregar o gerador de contrato.");
         const data = buildData();
         const contract = mode === "infantil" ? CONTRACTS.infantil : CONTRACTS.adulto;
         if (!contractTemplateCache.has(contract.template)) {
-          contractTemplateCache.set(contract.template, fetch(contract.template).then(async (response) => {
-            if (!response.ok) throw new Error("O modelo de contrato não está disponível.");
-            return response.arrayBuffer();
-          }).catch((error) => {
+          contractTemplateCache.set(contract.template, fetchContractTemplate(contract.template).catch((error) => {
             contractTemplateCache.delete(contract.template);
             throw error;
           }));
