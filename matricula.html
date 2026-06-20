@@ -1346,8 +1346,13 @@
         return { data, filename, blob: new Blob([bytes], { type: "application/pdf" }) };
       };
 
-      const apiErrorMessage = (payload) => {
-        if (payload && typeof payload.detail === "string") return payload.detail;
+      const apiErrorMessage = (payload, statusCode = 0) => {
+        if (payload && typeof payload.detail === "string" && !payload.detail.trim().startsWith("<")) {
+          return payload.detail;
+        }
+        if (statusCode >= 500) {
+          return "O servidor não conseguiu guardar os arquivos. Aguarde um instante e tente novamente.";
+        }
         const labels = {
           foto_3x4: "Foto",
           telefone_aluno: "WhatsApp",
@@ -1422,9 +1427,9 @@
         try {
           payload = text ? JSON.parse(text) : {};
         } catch {
-          payload = { detail: text };
+          payload = {};
         }
-        if (!response.ok) throw new Error(apiErrorMessage(payload));
+        if (!response.ok) throw new Error(apiErrorMessage(payload, response.status));
         return payload;
       };
 
