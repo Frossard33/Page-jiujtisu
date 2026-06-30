@@ -505,6 +505,83 @@
       font-size: 11px;
     }
 
+    .contract-reader {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      grid-template-rows: auto minmax(0, 1fr);
+      background: #0b0b0a;
+    }
+
+    .contract-reader.visible {
+      display: grid;
+    }
+
+    body.reader-open {
+      overflow: hidden;
+    }
+
+    .contract-reader-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: max(12px, env(safe-area-inset-top)) 14px 12px;
+      background: rgba(13, 13, 12, .98);
+    }
+
+    .contract-reader-bar strong,
+    .contract-reader-bar span {
+      display: block;
+    }
+
+    .contract-reader-bar strong {
+      font-size: 14px;
+    }
+
+    .contract-reader-bar span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .contract-reader-actions {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .contract-reader .button {
+      width: auto;
+      min-height: 42px;
+      white-space: nowrap;
+    }
+
+    .contract-reader-open {
+      display: grid;
+      min-height: 42px;
+      place-items: center;
+      border: 1px solid rgba(217, 175, 84, .55);
+      border-radius: 7px;
+      padding: 0 12px;
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 850;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .contract-reader-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
     .check-list {
       display: grid;
       gap: 9px;
@@ -725,6 +802,19 @@
         padding-left: 14px;
       }
 
+      .contract-reader-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .contract-reader-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .contract-reader .button,
+      .contract-reader-open {
+        width: 100%;
+      }
+
       .feedback {
         margin-right: 14px;
         margin-left: 14px;
@@ -933,6 +1023,20 @@
     </section>
   </main>
 
+  <section class="contract-reader" id="contractReader" aria-label="Leitura do contrato" hidden>
+    <div class="contract-reader-bar">
+      <div>
+        <strong>Contrato de matrícula</strong>
+        <span>Ao terminar a leitura, volte para concluir a matrícula sem perder seus dados.</span>
+      </div>
+      <div class="contract-reader-actions">
+        <button class="button primary" id="closeContractReader" type="button">Voltar para matrícula</button>
+        <a class="contract-reader-open" id="openContractExternal" href="#" target="_blank" rel="noopener">Abrir PDF</a>
+      </div>
+    </div>
+    <iframe class="contract-reader-frame" id="contractFrame" title="Contrato preenchido"></iframe>
+  </section>
+
   <footer class="enrollment-footer">
     <p><strong>Victor Frossard</strong> - Software Engineer</p>
   </footer>
@@ -980,6 +1084,10 @@
       const contractStatus = document.querySelector("#contractStatus");
       const successPanel = document.querySelector("#successPanel");
       const acceptedContractLink = document.querySelector("#acceptedContractLink");
+      const contractReader = document.querySelector("#contractReader");
+      const contractFrame = document.querySelector("#contractFrame");
+      const closeContractReader = document.querySelector("#closeContractReader");
+      const openContractExternal = document.querySelector("#openContractExternal");
       let currentStep = 1;
       let mode = "adulto";
       let contractOpened = false;
@@ -987,7 +1095,74 @@
       let acceptedContractUrl = "";
       let backendWarmupPromise = null;
       let preparedPhoto = null;
+      let draftTimer = 0;
       const contractTemplateCache = new Map();
+      const DRAFT_KEY = `matricula-draft-${ACADEMY_SLUG}`;
+
+      const isMobileViewport = () => window.matchMedia("(max-width: 740px), (pointer: coarse)").matches;
+
+      const draftControls = () => [...form.elements].filter((field) =>
+        field.name
+          && !["file", "button", "submit"].includes(field.type)
+          && field.name !== "acceptContract"
+      );
+
+      const saveDraft = () => {
+        try {
+          const values = {};
+          draftControls().forEach((field) => {
+            if (field.type === "radio") {
+              if (field.checked) values[field.name] = field.value;
+              return;
+            }
+            values[field.name] = field.type === "checkbox" ? field.checked : field.value;
+          });
+          sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+            mode,
+            currentStep,
+            values,
+            savedAt: Date.now()
+          }));
+        } catch {
+          // A matricula continua funcionando mesmo se o navegador bloquear o rascunho.
+        }
+      };
+
+      const queueSaveDraft = () => {
+        window.clearTimeout(draftTimer);
+        draftTimer = window.setTimeout(saveDraft, 150);
+      };
+
+      const restoreDraft = () => {
+        try {
+          const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null");
+          if (!draft || draft.mode !== mode || !draft.values) return false;
+          Object.entries(draft.values).forEach(([name, value]) => {
+            const controls = [...form.elements].filter((field) => field.name === name);
+            controls.forEach((field) => {
+              if (field.type === "radio") {
+                field.checked = field.value === value;
+                return;
+              }
+              if (field.type === "checkbox") {
+                field.checked = Boolean(value);
+                return;
+              }
+              field.value = value || "";
+            });
+          });
+          currentStep = Math.min(3, Math.max(1, Number(draft.currentStep) || 1));
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
+      const clearDraft = () => {
+        try {
+          sessionStorage.removeItem(DRAFT_KEY);
+        } catch {}
+      };
 
       const warmUpBackend = () => {
         if (!API_URL || backendWarmupPromise) return backendWarmupPromise;
@@ -1106,20 +1281,53 @@
         submitButton.hidden = currentStep !== 3;
         formActions.classList.toggle("single", currentStep === 1);
         clearFeedback();
+        saveDraft();
         window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      const enableContractAcceptance = () => {
+        contractOpened = true;
+        acceptContract.disabled = false;
+        contractAcceptRow.classList.remove("disabled");
+        contractStatus.textContent = "Contrato aberto. Depois da leitura, marque o aceite abaixo.";
+        saveDraft();
+      };
+
+      const closeContractReaderPanel = (scrollBack = true) => {
+        contractReader.classList.remove("visible");
+        contractReader.hidden = true;
+        contractFrame.removeAttribute("src");
+        document.body.classList.remove("reader-open");
+        if (scrollBack) {
+          document.querySelector('[data-step="3"]').scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      };
+
+      const openContractReaderPanel = () => {
+        if (!readingContractUrl) return;
+        enableContractAcceptance();
+        contractFrame.src = readingContractUrl;
+        openContractExternal.href = readingContractUrl;
+        contractReader.hidden = false;
+        contractReader.classList.add("visible");
+        document.body.classList.add("reader-open");
+        closeContractReader.focus();
       };
 
       const invalidateContract = () => {
         if (!readingContractUrl && !contractOpened) return;
+        closeContractReaderPanel(false);
         if (readingContractUrl) URL.revokeObjectURL(readingContractUrl);
         readingContractUrl = "";
         contractOpened = false;
         readContractLink.classList.remove("visible");
         readContractLink.removeAttribute("href");
+        openContractExternal.removeAttribute("href");
         acceptContract.checked = false;
         acceptContract.disabled = true;
         contractAcceptRow.classList.add("disabled");
         contractStatus.textContent = "Os dados mudaram. Prepare novamente o contrato para leitura.";
+        saveDraft();
       };
 
       const applyMode = () => {
@@ -1460,13 +1668,18 @@
         invalidateContract();
       });
 
+      const syncMedicalInfo = () => {
+        const hasInfo = form.elements.hasMedicalInfo.value === "sim";
+        medicalDetailsField.hidden = !hasInfo;
+        medicalDetails.required = hasInfo;
+        if (!hasInfo) medicalDetails.value = "";
+      };
+
       document.querySelectorAll('input[name="hasMedicalInfo"]').forEach((input) => {
         input.addEventListener("change", () => {
-          const hasInfo = form.elements.hasMedicalInfo.value === "sim";
-          medicalDetailsField.hidden = !hasInfo;
-          medicalDetails.required = hasInfo;
-          if (!hasInfo) medicalDetails.value = "";
+          syncMedicalInfo();
           invalidateContract();
+          queueSaveDraft();
         });
       });
 
@@ -1485,6 +1698,11 @@
       form.addEventListener("input", (event) => {
         if (["acceptContract", "confirmEnrollment"].includes(event.target.name)) return;
         invalidateContract();
+        queueSaveDraft();
+      });
+
+      form.addEventListener("change", () => {
+        queueSaveDraft();
       });
 
       prepareContractButton.addEventListener("click", async () => {
@@ -1514,11 +1732,23 @@
         }
       });
 
-      readContractLink.addEventListener("click", () => {
-        contractOpened = true;
-        acceptContract.disabled = false;
-        contractAcceptRow.classList.remove("disabled");
-        contractStatus.textContent = "Contrato aberto. Depois da leitura, marque o aceite abaixo.";
+      readContractLink.addEventListener("click", (event) => {
+        if (!readingContractUrl) return;
+        saveDraft();
+        if (isMobileViewport()) {
+          event.preventDefault();
+          openContractReaderPanel();
+          return;
+        }
+        enableContractAcceptance();
+      });
+
+      closeContractReader.addEventListener("click", () => {
+        closeContractReaderPanel();
+      });
+
+      openContractExternal.addEventListener("click", () => {
+        enableContractAcceptance();
       });
 
       form.addEventListener("submit", async (event) => {
@@ -1554,6 +1784,7 @@
           form.hidden = true;
           document.querySelector("#protocol").textContent = `Protocolo ${payload.id}`;
           successPanel.classList.add("visible");
+          clearDraft();
           successPanel.scrollIntoView({ behavior: "smooth", block: "start" });
         } catch (error) {
           showFeedback(error.message);
@@ -1567,9 +1798,18 @@
       });
 
       document.querySelector("#birthDate").max = yesterdayIso();
+      window.addEventListener("pagehide", saveDraft);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") saveDraft();
+      });
       warmUpBackend();
       applyMode();
+      const draftRestored = restoreDraft();
+      syncMedicalInfo();
       renderStep();
+      if (draftRestored && currentStep === 3 && !studentPhoto.files.length) {
+        contractStatus.textContent = "Dados recuperados. Prepare o contrato novamente antes de confirmar.";
+      }
     })();
   </script>
 </body>
