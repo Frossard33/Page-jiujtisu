@@ -301,6 +301,17 @@
       font-weight: 750;
     }
 
+    .field-error {
+      display: none;
+      color: #ffb6b0;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .field-error.visible {
+      display: block;
+    }
+
     input,
     textarea {
       width: 100%;
@@ -883,7 +894,8 @@
             </div>
             <div class="field adult-only">
               <label for="studentCpf">CPF</label>
-              <input id="studentCpf" name="studentCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00">
+              <input id="studentCpf" name="studentCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" aria-describedby="studentCpfError">
+              <small class="field-error" id="studentCpfError">Informe um CPF valido.</small>
             </div>
             <div class="field">
               <label id="phoneLabel" for="contactPhone">WhatsApp</label>
@@ -891,7 +903,8 @@
             </div>
             <div class="field">
               <label id="emailLabel" for="contactEmail">E-mail</label>
-              <input id="contactEmail" name="contactEmail" type="email" autocomplete="email" maxlength="160" required placeholder="email@exemplo.com">
+              <input id="contactEmail" name="contactEmail" type="email" autocomplete="email" maxlength="160" required placeholder="email@exemplo.com" aria-describedby="contactEmailError">
+              <small class="field-error" id="contactEmailError">Informe um e-mail valido.</small>
             </div>
             <div class="field wide">
               <label for="address">Endereço completo</label>
@@ -907,7 +920,8 @@
               </div>
               <div class="field">
                 <label for="guardianCpf">CPF do responsável</label>
-                <input id="guardianCpf" name="guardianCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00">
+                <input id="guardianCpf" name="guardianCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" aria-describedby="guardianCpfError">
+                <small class="field-error" id="guardianCpfError">Informe um CPF valido.</small>
               </div>
             </div>
           </div>
@@ -1073,6 +1087,7 @@
       const guardianName = document.querySelector("#guardianName");
       const guardianCpf = document.querySelector("#guardianCpf");
       const studentCpf = document.querySelector("#studentCpf");
+      const contactEmail = document.querySelector("#contactEmail");
       const studentPhoto = document.querySelector("#studentPhoto");
       const photoPreview = document.querySelector("#photoPreview");
       const medicalDetailsField = document.querySelector("#medicalDetailsField");
@@ -1088,6 +1103,9 @@
       const contractFrame = document.querySelector("#contractFrame");
       const closeContractReader = document.querySelector("#closeContractReader");
       const openContractExternal = document.querySelector("#openContractExternal");
+      const studentCpfError = document.querySelector("#studentCpfError");
+      const guardianCpfError = document.querySelector("#guardianCpfError");
+      const contactEmailError = document.querySelector("#contactEmailError");
       let currentStep = 1;
       let mode = "adulto";
       let contractOpened = false;
@@ -1240,12 +1258,82 @@
         feedback.classList.remove("visible");
       };
 
+      const onlyDigits = (value) => String(value || "").replace(/\D/g, "");
+
+      const isValidCpf = (value) => {
+        const cpf = onlyDigits(value);
+        if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+        const digits = cpf.split("").map(Number);
+        const calc = (length) => {
+          let total = 0;
+          for (let index = 0; index < length; index += 1) {
+            total += digits[index] * (length + 1 - index);
+          }
+          const rest = (total * 10) % 11;
+          return rest === 10 ? 0 : rest;
+        };
+        return calc(9) === digits[9] && calc(10) === digits[10];
+      };
+
+      const isValidEmail = (value) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(value || "").trim());
+
+      const setFieldError = (field, errorElement, message = "") => {
+        field.setCustomValidity(message);
+        errorElement.textContent = message;
+        errorElement.classList.toggle("visible", Boolean(message));
+      };
+
+      const validateCpfField = (field, errorElement) => {
+        if (field.disabled || field.hidden || field.closest("[hidden]")) {
+          setFieldError(field, errorElement);
+          return true;
+        }
+        const cpf = onlyDigits(field.value);
+        if (!cpf) {
+          setFieldError(field, errorElement);
+          return !field.required;
+        }
+        if (!isValidCpf(cpf)) {
+          setFieldError(field, errorElement, "Informe um CPF valido.");
+          return false;
+        }
+        setFieldError(field, errorElement);
+        return true;
+      };
+
+      const validateEmailField = () => {
+        const value = contactEmail.value.trim();
+        contactEmail.value = value;
+        if (!value) {
+          setFieldError(contactEmail, contactEmailError);
+          return !contactEmail.required;
+        }
+        if (!isValidEmail(value)) {
+          setFieldError(contactEmail, contactEmailError, "Informe um e-mail valido.");
+          return false;
+        }
+        setFieldError(contactEmail, contactEmailError);
+        return true;
+      };
+
+      const validateContactFields = () => {
+        const isChild = mode === "infantil";
+        setFieldError(isChild ? studentCpf : guardianCpf, isChild ? studentCpfError : guardianCpfError);
+        const cpfOk = isChild
+          ? validateCpfField(guardianCpf, guardianCpfError)
+          : validateCpfField(studentCpf, studentCpfError);
+        const emailOk = validateEmailField();
+        return emailOk && cpfOk;
+      };
+
       const activeFields = (stepNumber) => [
         ...document.querySelector(`[data-step="${stepNumber}"]`).querySelectorAll("input, textarea")
       ].filter((field) => !field.disabled && field.type !== "hidden");
 
       const validateStep = (stepNumber) => {
         clearFeedback();
+        validateContactFields();
         const invalid = activeFields(stepNumber).find((field) => !field.checkValidity());
         if (invalid) {
           invalid.reportValidity();
@@ -1686,8 +1774,12 @@
       [studentCpf, guardianCpf].forEach((input) => {
         input.addEventListener("input", () => {
           input.value = cpfMask(input.value);
+          validateCpfField(input, input === studentCpf ? studentCpfError : guardianCpfError);
         });
       });
+
+      contactEmail.addEventListener("input", validateEmailField);
+      contactEmail.addEventListener("blur", validateEmailField);
 
       [document.querySelector("#contactPhone"), document.querySelector("#emergencyPhone")].forEach((input) => {
         input.addEventListener("input", () => {
@@ -1758,6 +1850,7 @@
           showFeedback("Abra e leia o contrato antes de confirmar.");
           return;
         }
+        validateContactFields();
         if (!form.checkValidity()) {
           form.reportValidity();
           return;
@@ -1806,6 +1899,7 @@
       applyMode();
       const draftRestored = restoreDraft();
       syncMedicalInfo();
+      validateContactFields();
       renderStep();
       if (draftRestored && currentStep === 3 && !studentPhoto.files.length) {
         contractStatus.textContent = "Dados recuperados. Prepare o contrato novamente antes de confirmar.";
