@@ -1275,8 +1275,28 @@
         return calc(9) === digits[9] && calc(10) === digits[10];
       };
 
-      const isValidEmail = (value) =>
-        /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(value || "").trim());
+      const COMMON_EMAIL_TLD_TYPOS = new Set(["cim", "cmo", "co", "comn", "con", "vom"]);
+
+      const getEmailValidationError = (value) => {
+        const email = String(value || "").trim().toLowerCase();
+        if (!email) return "";
+        if (!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(email)) {
+          return "Informe um e-mail valido.";
+        }
+        const [localPart, domain] = email.split("@");
+        if (!localPart || !domain || localPart.startsWith(".") || localPart.endsWith(".") || localPart.includes("..")) {
+          return "Informe um e-mail valido.";
+        }
+        const domainParts = domain.split(".");
+        const tld = domainParts[domainParts.length - 1];
+        if (COMMON_EMAIL_TLD_TYPOS.has(tld)) {
+          return "Confira o final do e-mail. Parece haver erro de digitacao.";
+        }
+        if (tld.length < 2 || tld.length > 24 || !/^[a-z]+$/.test(tld)) {
+          return "Informe um e-mail valido.";
+        }
+        return "";
+      };
 
       const setFieldError = (field, errorElement, message = "") => {
         field.setCustomValidity(message);
@@ -1309,8 +1329,9 @@
           setFieldError(contactEmail, contactEmailError);
           return !contactEmail.required;
         }
-        if (!isValidEmail(value)) {
-          setFieldError(contactEmail, contactEmailError, "Informe um e-mail valido.");
+        const emailError = getEmailValidationError(value);
+        if (emailError) {
+          setFieldError(contactEmail, contactEmailError, emailError);
           return false;
         }
         setFieldError(contactEmail, contactEmailError);
