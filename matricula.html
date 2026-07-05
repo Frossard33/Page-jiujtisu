@@ -1421,6 +1421,44 @@
         submitProgress.classList.remove("visible");
       };
 
+      const wait = (milliseconds) => new Promise((resolve) => {
+        window.setTimeout(resolve, milliseconds);
+      });
+
+      const fetchWithTimeout = async (url, options = {}, timeoutMs = 55000) => {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          return await fetch(url, {
+            ...options,
+            signal: controller.signal
+          });
+        } catch (error) {
+          if (error.name === "AbortError") {
+            const timeoutError = new Error("O envio demorou mais que o esperado. Vou tentar novamente.");
+            timeoutError.retryable = true;
+            throw timeoutError;
+          }
+          error.retryable = true;
+          throw error;
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      };
+
+      const isRetryableSubmitError = (error) => {
+        if (error.retryable) return true;
+        return /Failed to fetch|NetworkError|Load failed|conectar|demorou|temporariamente/i.test(error.message || "");
+      };
+
+      const submitErrorMessage = (error) => {
+        const message = error.message || "";
+        if (/Failed to fetch|NetworkError|Load failed|conectar|demorou/i.test(message)) {
+          return "Não foi possível concluir o envio agora. Confira sua internet e tente novamente; seus dados continuam preenchidos nesta tela.";
+        }
+        return message || "Não foi possível concluir a matrícula. Tente novamente em instantes.";
+      };
+
       const todayIso = () => {
         const now = new Date();
         return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -2059,17 +2097,34 @@
         const photo = await prepareSelectedPhoto();
         body.set("foto_3x4", photo.blob, photo.filename);
         body.set("contrato_pdf_aceito", contract.blob, contract.filename);
-        onProgress("Enviando dados, foto e contrato...");
-        const response = await fetch(API_URL, { method: "POST", body });
-        const text = await response.text();
-        let payload = {};
-        try {
-          payload = text ? JSON.parse(text) : {};
-        } catch {
-          payload = {};
+        let lastError = null;
+        for (let attempt = 1; attempt <= 2; attempt += 1) {
+          onProgress(attempt === 1
+            ? "Enviando dados, foto e contrato..."
+            : "A conexão oscilou. Tentando enviar novamente..."
+          );
+          try {
+            const response = await fetchWithTimeout(API_URL, { method: "POST", body });
+            const text = await response.text();
+            let payload = {};
+            try {
+              payload = text ? JSON.parse(text) : {};
+            } catch {
+              payload = {};
+            }
+            if (!response.ok) {
+              const error = new Error(apiErrorMessage(payload, response.status));
+              error.retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+              throw error;
+            }
+            return payload;
+          } catch (error) {
+            lastError = error;
+            if (attempt >= 2 || !isRetryableSubmitError(error)) throw error;
+            await wait(1600);
+          }
         }
-        if (!response.ok) throw new Error(apiErrorMessage(payload, response.status));
-        return payload;
+        throw lastError;
       };
 
       nextButton.addEventListener("click", () => {
@@ -2253,7 +2308,7 @@
           clearDraft();
           successPanel.scrollIntoView({ behavior: "smooth", block: "start" });
         } catch (error) {
-          showFeedback(error.message);
+          showFeedback(submitErrorMessage(error));
         } finally {
           window.clearTimeout(slowServerTimer);
           window.clearTimeout(verySlowServerTimer);
