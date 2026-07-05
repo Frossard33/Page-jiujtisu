@@ -899,7 +899,8 @@
             </div>
             <div class="field">
               <label id="phoneLabel" for="contactPhone">WhatsApp</label>
-              <input id="contactPhone" name="contactPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" required placeholder="(24) 99999-9999">
+              <input id="contactPhone" name="contactPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" required placeholder="(24) 99999-9999" aria-describedby="contactPhoneError">
+              <small class="field-error" id="contactPhoneError">Informe um WhatsApp com DDD.</small>
             </div>
             <div class="field">
               <label id="emailLabel" for="contactEmail">E-mail</label>
@@ -1087,6 +1088,7 @@
       const guardianName = document.querySelector("#guardianName");
       const guardianCpf = document.querySelector("#guardianCpf");
       const studentCpf = document.querySelector("#studentCpf");
+      const contactPhone = document.querySelector("#contactPhone");
       const contactEmail = document.querySelector("#contactEmail");
       const studentPhoto = document.querySelector("#studentPhoto");
       const photoPreview = document.querySelector("#photoPreview");
@@ -1105,6 +1107,7 @@
       const openContractExternal = document.querySelector("#openContractExternal");
       const studentCpfError = document.querySelector("#studentCpfError");
       const guardianCpfError = document.querySelector("#guardianCpfError");
+      const contactPhoneError = document.querySelector("#contactPhoneError");
       const contactEmailError = document.querySelector("#contactEmailError");
       let currentStep = 1;
       let mode = "adulto";
@@ -1338,14 +1341,33 @@
         return true;
       };
 
+      const validatePhoneField = () => {
+        const digits = onlyDigits(contactPhone.value);
+        if (!digits) {
+          setFieldError(contactPhone, contactPhoneError, "Informe um WhatsApp com DDD.");
+          return false;
+        }
+        if (digits.length < 10 || digits.length > 11) {
+          setFieldError(contactPhone, contactPhoneError, "Informe DDD e numero do WhatsApp.");
+          return false;
+        }
+        if (/^(\d)\1+$/.test(digits)) {
+          setFieldError(contactPhone, contactPhoneError, "Informe um WhatsApp valido.");
+          return false;
+        }
+        setFieldError(contactPhone, contactPhoneError);
+        return true;
+      };
+
       const validateContactFields = () => {
         const isChild = mode === "infantil";
         setFieldError(isChild ? studentCpf : guardianCpf, isChild ? studentCpfError : guardianCpfError);
         const cpfOk = isChild
           ? validateCpfField(guardianCpf, guardianCpfError)
           : validateCpfField(studentCpf, studentCpfError);
+        const phoneOk = validatePhoneField();
         const emailOk = validateEmailField();
-        return emailOk && cpfOk;
+        return emailOk && phoneOk && cpfOk;
       };
 
       const activeFields = (stepNumber) => [
@@ -1802,11 +1824,14 @@
       contactEmail.addEventListener("input", validateEmailField);
       contactEmail.addEventListener("blur", validateEmailField);
 
-      [document.querySelector("#contactPhone"), document.querySelector("#emergencyPhone")].forEach((input) => {
+      [contactPhone, document.querySelector("#emergencyPhone")].forEach((input) => {
         input.addEventListener("input", () => {
           input.value = phoneMask(input.value);
+          if (input === contactPhone) validatePhoneField();
         });
       });
+
+      contactPhone.addEventListener("blur", validatePhoneField);
 
       form.addEventListener("input", (event) => {
         if (["acceptContract", "confirmEnrollment"].includes(event.target.name)) return;
