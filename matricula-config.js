@@ -1,5 +1,6 @@
 window.MATRICULA_CONFIG = {
   apiUrl: "https://jiu-crm-backend.onrender.com/api/matriculas-online/",
+  agendamentoUrl: "https://jiu-crm-backend.onrender.com/api/agendamentos/",
   contractAssetBaseUrl: "https://frossard33.github.io/Page-jiujtisu/",
   academySlug: "gilson-batista",
   academyEmail: "gilsonbatista7@hotmail.com",
